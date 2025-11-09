@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+const API = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 import { useNavigate } from 'react-router-dom';
 
 // Agendamento.jsx
@@ -41,7 +42,7 @@ export default function Agendamento() {
   // Ao montar, buscamos usuários aprovados para popular o dropdown de advogado
   useEffect(() => {
     setLoadingUsers(true);
-    fetch('http://localhost:5000/users/approved')
+  fetch(`${API}/users/approved`)
       .then((res) => res.json())
       .then((data) => {
         // API retorna { users: [...] }
@@ -82,7 +83,7 @@ export default function Agendamento() {
 
     setSubmitting(true);
     try {
-      const res = await fetch('http://localhost:5000/schedules', {
+  const res = await fetch(`${API}/schedules`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

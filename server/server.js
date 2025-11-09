@@ -15,8 +15,8 @@ const sqlite3 = require('sqlite3').verbose();
 // bcryptjs para hashear/verificar senhas de forma simples
 const bcrypt = require('bcryptjs');
 
-// Porta onde o servidor vai escutar
-const PORT = 5000;
+// Porta onde o servidor vai escutar (no Render o PORT vem em env var)
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 
 // --- Configuração do banco SQLite3 ---
 // Caminho do arquivo de banco (será criado automaticamente se não existir)
@@ -126,14 +126,25 @@ process.on('exit', () => {
 
 // Envia resposta JSON com cabeçalhos CORS e status HTTP
 // Parâmetros: res - objeto resposta; data - payload (objeto); statusCode - código HTTP (padrão 200)
-function sendJSON(res, data, statusCode = 200) {
+// Lista de origens permitidas (frontend no Vercel e o dev server do Vite)
+const ALLOWED_ORIGINS = [
+  'https://gaj-xi.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
+
+function sendJSON(res, data, statusCode = 200, reqOrigin = '*') {
   const body = JSON.stringify(data);
-  res.writeHead(statusCode, {
+  // se reqOrigin não foi passado, tentamos extrair de res._reqOrigin (definido por request handler)
+  const origin = reqOrigin === '*' ? res._reqOrigin : reqOrigin;
+  const headers = {
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Accept'
-  });
+  };
+  // Se a origem for permitida, ecoamos ela; caso contrário não setamos (bloqueio ao frontend)
+  if (origin && ALLOWED_ORIGINS.includes(origin)) headers['Access-Control-Allow-Origin'] = origin;
+  res.writeHead(statusCode, headers);
   res.end(body);
 }
 
@@ -170,6 +181,8 @@ function parseBody(req) {
 function notFound(res) {
   return sendJSON(res, { error: 'Rota não encontrada' }, 404);
 }
+
+// (static file serving removed - frontend will be hosted separately on Vercel)
 
 // Valida se um horário (string 'HH:MM') está entre 06:00 e 18:00 (inclusive)
 function validateHour(time) {
@@ -209,17 +222,21 @@ function checkPassword(password, hash) {
 const server = http.createServer((req, res) => {
   // Parseia a URL para obter o pathname e querystring
   const parsedUrl = url.parse(req.url, true);
+  // Guarda a origem da requisição no objeto res para uso posterior em sendJSON
+  res._reqOrigin = req.headers && req.headers.origin ? req.headers.origin : '';
   // Normaliza o pathname removendo barras finais (ex: '/foo/' -> '/foo')
   const pathname = (parsedUrl.pathname || '').replace(/\/+$/g, '') || '/';
 
   // Tratamento para requisições OPTIONS (preflight CORS)
   if (req.method === 'OPTIONS') {
-    // Retorna apenas os cabeçalhos necessários para o preflight
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': '*',
+    // Preflight: aceitaremos apenas origens permitidas
+    const origin = req.headers.origin;
+    const headers = {
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Accept'
-    });
+    };
+    if (origin && ALLOWED_ORIGINS.includes(origin)) headers['Access-Control-Allow-Origin'] = origin;
+    res.writeHead(204, headers);
     return res.end();
   }
 
@@ -449,12 +466,30 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // GET /schedules/:id -> busca um agendamento por id (numérico)
   // GET /schedules/:date -> lista agendamentos de uma data específica (YYYY-MM-DD)
   // Ex: /schedules/2025-10-28
   if (pathname.startsWith('/schedules/') && req.method === 'GET') {
-    const parts = pathname.split('/').filter(Boolean); // ['schedules', '2025-10-28']
-    const date = parts[1];
-    if (!date) return sendJSON(res, { error: 'Data não informada' }, 400);
+    const parts = pathname.split('/').filter(Boolean); // ['schedules', '...']
+    const param = parts[1];
+    if (!param) return sendJSON(res, { error: 'Parâmetro não informado' }, 400);
+
+    // Se for numérico, tratamos como id
+    if (/^\d+$/.test(param)) {
+      const id = param;
+      db.get('SELECT * FROM schedules WHERE id = ?', [id], (err, row) => {
+        if (err) {
+          console.error('Erro buscando agendamento por id:', err.message);
+          return sendJSON(res, { error: 'Erro interno' }, 500);
+        }
+        if (!row) return sendJSON(res, { error: 'Agendamento não encontrado' }, 404);
+        return sendJSON(res, { schedule: row }, 200);
+      });
+      return;
+    }
+
+    // Caso contrário, tratamos como data (YYYY-MM-DD)
+    const date = param;
     db.all('SELECT * FROM schedules WHERE date = ?', [date], (err, rows) => {
       if (err) {
         console.error('Erro listando agendamentos por data:', err.message);

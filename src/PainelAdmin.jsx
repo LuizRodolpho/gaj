@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+const API = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 
 // PainelAdmin.jsx
 // - Mostra duas seções: Pendentes (approved=0) e Aprovados (approved=1)
@@ -27,7 +28,7 @@ export default function PainelAdmin() {
     setLoading(true);
     setError('');
     try {
-      const aRes = await fetch('http://localhost:5000/users/approved');
+  const aRes = await fetch(`${API}/users/approved`);
       const aData = await aRes.json().catch(() => ({}));
       setApproved(Array.isArray(aData.users) ? aData.users : []);
     } catch (err) {
@@ -49,7 +50,7 @@ export default function PainelAdmin() {
     setActionLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:5000/users/reject', {
+  const res = await fetch(`${API}/users/reject`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -70,7 +71,7 @@ export default function PainelAdmin() {
     setActionLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:5000/users/admin', {
+  const res = await fetch(`${API}/users/admin`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -97,7 +98,7 @@ export default function PainelAdmin() {
     setCreating(true);
     try {
       const payload = { name, email, password, cpf, approved: 1, is_admin: isAdminCreate ? 1 : 0 };
-      const res = await fetch('http://localhost:5000/users', {
+  const res = await fetch(`${API}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

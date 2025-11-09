@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+// Base URL da API (pode ser sobrescrita em build via Vite env VITE_API_BASE)
+const API = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 import { useNavigate } from 'react-router-dom';
 
 // Home.jsx
@@ -37,7 +39,7 @@ export default function Home() {
   useEffect(() => {
     setLoading(true);
     setError('');
-    fetch('http://localhost:5000/schedules')
+  fetch(`${API}/schedules`)
       .then((res) => res.json())
       .then((data) => {
         // A API retorna { schedules: [...] }

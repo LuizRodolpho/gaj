@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+const API = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 import { useNavigate, Link } from 'react-router-dom';
 
 // Tela de login
@@ -22,7 +23,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/login', {
+  const res = await fetch(`${API}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password })

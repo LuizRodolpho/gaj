@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+const API = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 import { Link, useNavigate } from 'react-router-dom';
 
 // Register.jsx
@@ -28,7 +29,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/users', {
+  const res = await fetch(`${API}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, cpf })
