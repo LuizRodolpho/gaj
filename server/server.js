@@ -126,24 +126,14 @@ process.on('exit', () => {
 
 // Envia resposta JSON com cabeçalhos CORS e status HTTP
 // Parâmetros: res - objeto resposta; data - payload (objeto); statusCode - código HTTP (padrão 200)
-// Lista de origens permitidas (frontend no Vercel e o dev server do Vite)
-const ALLOWED_ORIGINS = [
-  'https://gaj-xi.vercel.app',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173'
-];
-
-function sendJSON(res, data, statusCode = 200, reqOrigin = '*') {
+function sendJSON(res, data, statusCode = 200) {
   const body = JSON.stringify(data);
-  // se reqOrigin não foi passado, tentamos extrair de res._reqOrigin (definido por request handler)
-  const origin = reqOrigin === '*' ? res._reqOrigin : reqOrigin;
   const headers = {
     'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Accept'
   };
-  // Se a origem for permitida, ecoamos ela; caso contrário não setamos (bloqueio ao frontend)
-  if (origin && ALLOWED_ORIGINS.includes(origin)) headers['Access-Control-Allow-Origin'] = origin;
   res.writeHead(statusCode, headers);
   res.end(body);
 }
@@ -229,13 +219,11 @@ const server = http.createServer((req, res) => {
 
   // Tratamento para requisições OPTIONS (preflight CORS)
   if (req.method === 'OPTIONS') {
-    // Preflight: aceitaremos apenas origens permitidas
-    const origin = req.headers.origin;
     const headers = {
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Accept'
     };
-    if (origin && ALLOWED_ORIGINS.includes(origin)) headers['Access-Control-Allow-Origin'] = origin;
     res.writeHead(204, headers);
     return res.end();
   }
