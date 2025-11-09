@@ -29,8 +29,11 @@ export default function PainelAdmin() {
     setError('');
     try {
   const aRes = await fetch(`${API}/users/approved`);
-      const aData = await aRes.json().catch(() => ({}));
-      setApproved(Array.isArray(aData.users) ? aData.users : []);
+  const aData = await aRes.json().catch(() => ({}));
+  const users = Array.isArray(aData.users) ? aData.users : [];
+  // Não exibe o admin padrão no painel para evitar remoção/alterações acidentais
+  const filtered = users.filter((u) => String(u.email).toLowerCase() !== 'admin@admin.com');
+  setApproved(filtered);
     } catch (err) {
       console.error('Erro ao buscar lista de usuários aprovados:', err);
       setError('Falha ao carregar usuários');
