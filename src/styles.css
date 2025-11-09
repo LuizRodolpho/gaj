@@ -1,0 +1,107 @@
+/* src/styles.css
+   Estilos base para a aplicação GAJ
+
+   - Navbar lateral fixa à esquerda (.sidebar)
+   - Área principal de conteúdo com margem à esquerda (.main)
+   - Botões simples (.btn) e botão ativo (.ativo)
+   - Cores suaves: variáveis CSS no topo para facilitar customização
+   - Centralização de telas de login/cadastro (.page-center, .formCard)
+   - Classe para a bolinha verde do calendário (.event-dot)
+
+   Para alterar tema: modificar as variáveis --bg, --primary, --muted, --success
+*/
+
+:root{
+  --bg: #f7f8fa; /* fundo da aplicação */
+  --panel-bg: #ffffff; /* fundo de cards e painéis */
+  --text: #222831;
+  --muted: #6c757d; /* texto menos destacado */
+  --primary: #2d7bf6; /* azul para botões */
+  --accent: #f0f2f5; /* realce leve */
+  --success: #2ecc71; /* verde para status */
+  --danger: #f44336;
+  --sidebar-width: 220px;
+  --radius: 8px;
+  --gap: 12px;
+}
+
+/* Reset mínimo */
+*{box-sizing: border-box}
+html,body,#root{height:100%;margin:0;font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+body{background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+
+/* --- Layout --- */
+.sidebar{
+  position:fixed;
+  left:0;top:0;bottom:0;
+  width:var(--sidebar-width);
+  background:var(--panel-bg);
+  border-right:1px solid #e6e9ef;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:var(--gap);
+}
+
+.main{
+  margin-left:var(--sidebar-width);
+  padding:20px;
+  min-height:100vh;
+}
+
+/* Brand */
+.brand{font-weight:700;font-size:20px}
+
+/* Nav list inside sidebar */
+.navList{display:flex;flex-direction:column;gap:8px}
+
+/* Botões do navbar e botões gerais */
+.btn{
+  display:inline-block;
+  padding:8px 12px;
+  border-radius:6px;
+  text-decoration:none;
+  color:var(--text);
+  background:transparent;
+  border:1px solid transparent;
+  cursor:pointer;
+}
+.btn:hover{background:var(--accent)}
+.btn[disabled]{opacity:0.6;cursor:not-allowed}
+
+.ativo{
+  background:var(--primary);
+  color:white !important;
+}
+
+/* Form and cards */
+.formCard{background:var(--panel-bg);padding:24px;border-radius:var(--radius);box-shadow:0 2px 8px rgba(18,23,30,0.04)}
+.input, input[type='text'], input[type='email'], input[type='password'], select, textarea{width:100%;padding:8px;border-radius:6px;border:1px solid #e3e6ea}
+.error{color:var(--danger);font-size:0.95rem}
+.success{color:var(--success);font-size:0.95rem}
+
+/* Centrando telas como login/register */
+.page-center{display:flex;align-items:center;justify-content:center;min-height:80vh}
+
+/* Calendar specific */
+.calendarCell{border-radius:6px;border:1px solid #eee;background:white}
+.calendarCell:hover{box-shadow:0 2px 6px rgba(16,24,40,0.06)}
+.event-dot{width:8px;height:8px;border-radius:50%;background:var(--success);display:block;margin-top:6px}
+
+/* Table styles for admin panel */
+table{width:100%;border-collapse:collapse}
+thead th{background:transparent;color:var(--muted);font-weight:600}
+tbody tr:hover{background:rgba(34,40,49,0.02)}
+th,td{padding:10px;border-bottom:1px solid #f3f4f6;text-align:left}
+
+/* Utility classes */
+.muted{color:var(--muted)}
+.small{font-size:0.9rem}
+
+/* Responsive hints: on small screens place the sidebar on top */
+@media (max-width: 800px){
+  .sidebar{position:relative;width:100%;height:auto;border-right:none;border-bottom:1px solid #eaeef2}
+  .main{margin-left:0}
+}
+
+/* End of styles - personalize colors above in :root */

@@ -1,0 +1,6 @@
+{
+  "name": "dsrv3-server-deprecated",
+  "version": "1.0.0",
+  "description": "DEPRECATED: package.json duplicate left in server/ — use the root package.json instead",
+  "private": true
+}
